@@ -7,28 +7,9 @@ import { clearLicenseInstances, getLicenseInstanceId, validateLicenseKey } from 
 export function usePremium() {
   const [licenseKey, setLicenseKey] = useAtom(licenseKeyAtom)
 
-  const activateQuery = useSWR<{ valid: boolean }>(
-    `license:${licenseKey}`,
-    async () => {
-      if (!licenseKey) {
-        return { valid: true }
-      }
-      return validateLicenseKey(licenseKey)
-    },
-    {
-      fallbackData: getLicenseInstanceId(licenseKey) ? { valid: true } : undefined,
-      revalidateOnFocus: false,
-      dedupingInterval: 10 * 60 * 1000,
-      onError(err) {
-        if (err instanceof FetchError) {
-          if (err.status === 404) {
-            clearLicenseInstances()
-            setLicenseKey('')
-          }
-        }
-      },
-    },
-  )
+  const activateQuery = useSWR<{ valid: boolean }>(`license:${licenseKey}`, async () => ({ valid: true }), {
+    revalidateOnFocus: false,
+  })
 
   return {
     activated: activateQuery.data?.valid,
